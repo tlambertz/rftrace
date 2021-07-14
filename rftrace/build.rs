@@ -37,13 +37,10 @@ fn build_backend() {
         println!("cargo:rerun-if-env-changed=RFTRACE_TARGET_TRIPLE");
         env::var("RFTRACE_TARGET_TRIPLE").unwrap_or_else(|_| {
             let default = env::var("TARGET").unwrap();
-            #[cfg(not(feature = "autokernel"))]
-            return default;
-            #[cfg(feature = "autokernel")]
-            if default == "x86_64-unknown-hermit" {
-                return "x86_64-unknown-hermit-kernel".to_owned();
+            if cfg!(feature = "autokernel") && default == "x86_64-unknown-hermit" {
+                "x86_64-unknown-hermit-kernel".to_owned()
             } else {
-                return default;
+                default
             }
         })
     };
@@ -94,7 +91,7 @@ fn build_backend() {
     }
 
     // Ensure rustflags does NOT contain instrument-mcount!
-    let rustflags = env::var("RUSTFLAGS").unwrap_or("".into());
+    let rustflags = env::var("RUSTFLAGS").unwrap_or_default();
     if rustflags.contains("mcount") {
         println!("WARNING: RUSTFLAGS contains mcount, trying to remove the key.");
         cmd.env(

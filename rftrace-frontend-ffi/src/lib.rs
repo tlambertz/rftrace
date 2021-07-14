@@ -2,8 +2,6 @@
 //! You can find a usage example in the [repository](https://github.com/tlambertz/rftrace/examples/c)
 //! A lot of documentation can be found in the parent workspaces [readme](https://github.com/tlambertz/rftrace).
 
-use rftrace_frontend;
-
 use std::ffi::CStr;
 use std::os::raw::c_char;
 
@@ -24,8 +22,7 @@ pub unsafe extern "C" fn rftrace_disable() {
 #[no_mangle]
 /// Wraps rftrace_frontend::init();
 pub unsafe extern "C" fn rftrace_init(max_event_count: usize, overwriting: bool) -> *mut Events {
-    let events = rftrace_frontend::init(max_event_count, overwriting);
-    events
+    rftrace_frontend::init(max_event_count, overwriting)
 }
 
 #[no_mangle]
@@ -40,11 +37,11 @@ pub unsafe extern "C" fn rftrace_dump_full_uftrace(
     let binary_name = CStr::from_ptr(binary_name).to_string_lossy().into_owned();
     let linux = linux_mode != 0;
 
-    if let Err(_) = rftrace_frontend::dump_full_uftrace(&mut *events, &out_dir, &binary_name, linux)
+    if rftrace_frontend::dump_full_uftrace(&mut *events, &out_dir, &binary_name, linux).is_err()
     {
         return -1;
     }
-    return 0;
+    0
 }
 
 #[no_mangle]
@@ -52,10 +49,10 @@ pub unsafe extern "C" fn rftrace_dump_full_uftrace(
 pub unsafe extern "C" fn rftrace_dump_trace(events: *mut Events, outfile: *const c_char) -> i64 {
     let outfile = CStr::from_ptr(outfile).to_string_lossy().into_owned();
 
-    if let Err(_) = rftrace_frontend::dump_trace(&mut *events, &outfile) {
+    if rftrace_frontend::dump_trace(&mut *events, &outfile).is_err() {
         return -1;
     }
-    return 0;
+    0
 }
 
 
