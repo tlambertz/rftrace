@@ -243,8 +243,9 @@ pub extern "C" fn mcount_return_trampoline() {
 
     /*
     Stack layout:
-        RBP +112
-            +104    RETURN-ADDRESS
+        RBP +120
+            +112    RETURN-ADDRESS
+            +104    rflags   |
             +96     r11      |
             +88     r10      |
             +80     r9       |
@@ -266,8 +267,6 @@ pub extern "C" fn mcount_return_trampoline() {
         llvm_asm!("push %rax"); // fake return value for later
         #[cfg(feature = "interruptsafe")]
         llvm_asm!("pushfq"); // flags for interrupt stuff
-        #[cfg(feature = "interruptsafe")]
-        llvm_asm!("cli"); // dont do interrupts here!
         #[cfg(feature = "interruptsafe")]
         llvm_asm!("sub $$104, %rsp");
         #[cfg(not(feature = "interruptsafe"))]
